@@ -16,6 +16,7 @@ function App() {
   const handleLoadSample = () => {
     const formattedMeta = sampleCustomers.map(c => ({
       ...c,
+      attachment: c.pdf,
       status: { type: 'pending', text: 'Waiting' }
     }));
     setCustomers(formattedMeta);
@@ -32,6 +33,7 @@ function App() {
         const parsed = parseCSV(text);
         const formatted = parsed.map(c => ({
           ...c,
+          attachment: null,
           status: { type: 'pending', text: 'Waiting' }
         }));
         setCustomers(formatted);
@@ -52,16 +54,20 @@ function App() {
     let matchedCount = 0;
 
     const updatedCustomers = customers.map(customer => {
-      // Find a matching PDF file where filename includes the invoice number
+      // Find a matching PDF file where filename matches the expected pdf filename from CSV
+      // We start by checking exact match or case-insensitive match on the pdf field
+      const intendedPdfName = customer.pdf || '';
+
       const matchedFile = fileList.find(file =>
-        file.name.toLowerCase().includes(customer.invoice.toLowerCase())
+        file.name.toLowerCase() === intendedPdfName.toLowerCase()
       );
 
       if (matchedFile) matchedCount++;
 
       return {
         ...customer,
-        attachment: matchedFile ? matchedFile.name : null
+        // Only update attachment if we found a match, otherwise keep existing (or null)
+        attachment: matchedFile ? matchedFile.name : customer.attachment
       };
     });
 

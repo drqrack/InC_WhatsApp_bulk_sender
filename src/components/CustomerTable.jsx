@@ -22,7 +22,6 @@ const CustomerTable = ({ customers, currentId }) => {
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
-                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount (GH₵)</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -79,9 +78,6 @@ const CustomerTable = ({ customers, currentId }) => {
                                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                             {customer.invoice}
                                         </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900 font-semibold">
-                                        {customer.amount}
                                     </td>
                                 </tr>
                             );

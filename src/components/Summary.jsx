@@ -6,11 +6,12 @@ const Summary = ({ stats, customers }) => {
     if (stats.total === 0) return null;
 
     const downloadResults = () => {
-        const headers = ['name,phone,invoice,amount,status,timestamp,message\n'];
+        const headers = ['name,phone,invoice,status,timestamp,message\n'];
         const rows = customers.map(c => {
             const statusStr = c.status.type === 'success' ? 'SUCCESS' : c.status.type === 'error' ? 'FAILED' : 'PENDING';
             const msg = c.result?.message || '';
-            return `${c.name},${c.phone},${c.invoice},${c.amount},${statusStr},${c.result?.timestamp || ''},"${msg}"`;
+            const cleanMessage = msg.replace(/"/g, '""'); // Escape quotes
+            return `${c.name},${c.phone},${c.invoice},${statusStr},${c.result?.timestamp || ''},"${cleanMessage}"`;
         });
 
         const csvContent = headers.concat(rows).join('\n');

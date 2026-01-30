@@ -16,7 +16,7 @@ def simulate_whatsapp_sender(input_file='customers.xlsx'):
         else:
             df = pd.read_excel(input_file)
             
-        required_columns = ['name', 'phone', 'amount', 'invoice']
+        required_columns = ['customer name', 'customer number', 'pdf filename']
         if not all(col in df.columns for col in required_columns):
             print(f"❌ Error: Input file must contain columns: {', '.join(required_columns)}")
             return
@@ -30,46 +30,48 @@ def simulate_whatsapp_sender(input_file='customers.xlsx'):
         failed_count = 0
 
         for index, row in df.iterrows():
-            customer_name = row['name']
-            phone = row['phone']
-            invoice = row['invoice']
-            amount = row['amount']
+            customer_name = row['customer name']
+            phone = row['customer number']
+            pdf_filename = row['pdf filename']
             
             print(f"[{index + 1}/{total_customers}] Processing {customer_name} ({phone})...", end='', flush=True)
             
-            # Find matching invoice PDF
+            # Verify PDF file existence
             attachment = "None"
-            pdf_file = f"{invoice}.pdf"
             
             # Simple check for file existence
-            if os.path.exists(pdf_file):
-                print(f" 📎 Found {pdf_file}...", end='', flush=True)
-                attachment = pdf_file
+            if os.path.exists(pdf_filename):
+                print(f" 📎 Found {pdf_filename}...", end='', flush=True)
+                attachment = pdf_filename
                 time.sleep(1) # Simulate upload time
             else:
-                 # Try matching part of filename
-                for file in os.listdir('.'):
-                    if file.endswith('.pdf') and invoice.lower() in file.lower():
-                        print(f" 📎 Found {file}...", end='', flush=True)
-                        attachment = file
-                        time.sleep(1)
-                        break
+                 print(" ❌ PDF not found locally (simulating logic based on CSV)...", end='', flush=True)
+                 # In this updated flow, we assume the CSV provides the correct filename.
+                 # If we are strictly checking file existence, we should fail.
+                 # However, to be helpful, let's warn but proceed or fail based on strictness.
+                 # Given the previous context was strict:
+                 # But let's check if the user wants strictly strict or if they just want to simulate.
+                 # If the file isn't found, we can try to assume it's valid if just simulating, 
+                 # but the script is for actual local running, so file existence matters.
+                 
+                 # Let's try to match slightly looser if needed, or strictly use the provided name.
+                 # If the provided name is not found, we mark as missing.
+                 pass
 
-            # Check if attachment was found
-            if attachment == "None":
-                print(" ❌ Failed (Missing PDF)")
+            if not os.path.exists(pdf_filename):
+                print(" ❌ Failed (File not found)")
                 failed_count += 1
                 results.append({
                     'name': customer_name,
                     'phone': phone,
-                    'invoice': invoice,
-                    'amount': amount,
-                    'attachment': None,
+                    'pdf': pdf_filename,
                     'status': 'FAILED',
                     'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    'message': "Failed: Missing PDF Attachment"
+                    'message': f"Failed: File {pdf_filename} not found"
                 })
-                continue # Skip this customer
+                continue
+
+            attachment = pdf_filename
 
             # Simulate processing time
             time.sleep(2)
@@ -82,7 +84,7 @@ def simulate_whatsapp_sender(input_file='customers.xlsx'):
                 status = "SUCCESS"
                 print(" ✅ Sent")
                 success_count += 1
-                message = f"Hi {customer_name}, your invoice #{invoice} for GH₵ {amount} is ready. Thank you for your business!"
+                message = f"Hi {customer_name}, your invoice ({pdf_filename}) is ready. Thank you for your business!"
             else:
                 status = "FAILED"
                 print(" ❌ Failed")
@@ -92,9 +94,7 @@ def simulate_whatsapp_sender(input_file='customers.xlsx'):
             results.append({
                 'name': customer_name,
                 'phone': phone,
-                'invoice': invoice,
-                'amount': amount,
-                'attachment': attachment,
+                'pdf': pdf_filename,
                 'status': status,
                 'timestamp': timestamp,
                 'message': message
@@ -120,10 +120,9 @@ def simulate_whatsapp_sender(input_file='customers.xlsx'):
 def create_sample_data():
     if not os.path.exists('customers.xlsx') and not os.path.exists('customers.csv'):
         data = {
-            'name': ['John Mensah', 'Grace Adu', 'Kwame Osei', 'Ama Asante', 'Kofi Boateng'],
-            'phone': ['233244123456', '233201234567', '233551234567', '233209876543', '233245678901'],
-            'amount': [500.00, 750.00, 1200.00, 1500.00, 890.00],
-            'invoice': ['INV-001', 'INV-002', 'INV-003', 'INV-004', 'INV-005']
+            'customer name': ['John Mensah', 'Grace Adu', 'Kwame Osei', 'Ama Asante', 'Kofi Boateng'],
+            'customer number': ['233244123456', '233201234567', '233551234567', '233209876543', '233245678901'],
+            'pdf filename': ['invoice_001.pdf', 'invoice_002.pdf', 'invoice_003.pdf', 'invoice_004.pdf', 'invoice_005.pdf']
         }
         pd.DataFrame(data).to_excel('customers.xlsx', index=False)
         print("📝 Created sample 'customers.xlsx' file")
